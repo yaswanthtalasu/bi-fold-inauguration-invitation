@@ -8,7 +8,7 @@ const base = import.meta.env.BASE_URL
 const SITE_URL = 'https://www.qffrguktn.com'
 
 const PAGES = [
-  { src: `${base}pages/page-1-cover.webp`, srcMd: `${base}pages/page-1-cover-md.webp`, alt: 'Invitation cover: inaugural ceremony of Plus Qiskit Fall Fest 26, 5 October 2026, 2:00 PM to 3:00 PM, RGUKT Nuzvid' },
+  { src: `${base}pages/page-1-cover.webp`, srcMd: `${base}pages/page-1-cover-md.webp`, alt: 'Invitation cover: inaugural ceremony of Plus Qiskit Fall Fest 26, 5 October 2026, RGUKT Nuzvid' },
   { src: `${base}pages/page-2-schedule.webp`, srcMd: `${base}pages/page-2-schedule-md.webp`, alt: 'Event schedule, 5 to 9 October 2026' },
   { src: `${base}pages/page-3-speakers.webp`, srcMd: `${base}pages/page-3-speakers-md.webp`, alt: 'List of speakers' },
   { src: `${base}pages/page-4-about.webp`, srcMd: `${base}pages/page-4-about-md.webp`, alt: 'About RGUKT and Plus Qiskit Fall Fest 26, contact details and venue QR code' },
