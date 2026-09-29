@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Flipbook from './Flipbook.jsx'
+import { primeSound, warmSound } from './sound.js'
 
 const base = import.meta.env.BASE_URL
 
 // Page order requested: 2, 3, 4, 1 of the source PDF.
+const SITE_URL = 'https://www.qffrguktn.com'
+
 const PAGES = [
-  { src: `${base}pages/page-1-cover.webp`, alt: 'Invitation cover: inaugural ceremony of Plus Qiskit Fall Fest 26, 5 October 2026, 2:00 PM to 3:00 PM, RGUKT Nuzvid' },
-  { src: `${base}pages/page-2-schedule.webp`, alt: 'Event schedule, 5 to 9 October 2026' },
-  { src: `${base}pages/page-3-speakers.webp`, alt: 'List of speakers' },
-  { src: `${base}pages/page-4-about.webp`, alt: 'About RGUKT and Plus Qiskit Fall Fest 26, contact details and venue QR code' },
+  { src: `${base}pages/page-1-cover.webp`, srcMd: `${base}pages/page-1-cover-md.webp`, alt: 'Invitation cover: inaugural ceremony of Plus Qiskit Fall Fest 26, 5 October 2026, 2:00 PM to 3:00 PM, RGUKT Nuzvid' },
+  { src: `${base}pages/page-2-schedule.webp`, srcMd: `${base}pages/page-2-schedule-md.webp`, alt: 'Event schedule, 5 to 9 October 2026' },
+  { src: `${base}pages/page-3-speakers.webp`, srcMd: `${base}pages/page-3-speakers-md.webp`, alt: 'List of speakers' },
+  { src: `${base}pages/page-4-about.webp`, srcMd: `${base}pages/page-4-about-md.webp`, alt: 'About RGUKT and Plus Qiskit Fall Fest 26, contact details and venue QR code' },
 ]
 
 const PAGE_NAMES = ['Invitation', 'Event schedule', 'Speakers', 'About']
@@ -74,7 +77,14 @@ export default function App() {
     const onFs = () => setFullscreen(Boolean(document.fullscreenElement))
     window.addEventListener('keydown', onKey)
     document.addEventListener('fullscreenchange', onFs)
+    // Browsers only allow audio after a gesture; set it up now so the first page turn is smooth.
+    window.addEventListener('pointerdown', primeSound, { once: true, passive: true })
+    window.addEventListener('touchstart', primeSound, { once: true, passive: true })
+    window.addEventListener('keydown', primeSound, { once: true, passive: true })
     return () => {
+      window.removeEventListener('pointerdown', primeSound)
+      window.removeEventListener('touchstart', primeSound)
+      window.removeEventListener('keydown', primeSound)
       window.removeEventListener('keydown', onKey)
       document.removeEventListener('fullscreenchange', onFs)
     }
@@ -91,37 +101,52 @@ export default function App() {
     state.mode === 'portrait' ? PAGE_NAMES[state.pageIndex] : SPREAD_NAMES[state.spreadIndex]
 
   return (
-    <div className="app">
+    <div className="app" data-mode={state.mode}>
       <header className="top">
-        <div className="title">
-          <h1>Plus Qiskit Fall Fest ’26</h1>
-          <p>Inaugural ceremony invitation<span className="org"> · RGUKT Nuzvid</span></p>
-        </div>
-        <div className="tools">
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => setSound((v) => !v)}
-            aria-pressed={sound}
-            aria-label={sound ? 'Mute page-turn sound' : 'Turn on page-turn sound'}
-            title={sound ? 'Mute page-turn sound' : 'Turn on page-turn sound'}
-          >
-            {sound ? Icon.soundOn : Icon.soundOff}
-          </button>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={toggleFullscreen}
-            aria-label={fullscreen ? 'Exit full screen' : 'Full screen'}
-            title={fullscreen ? 'Exit full screen' : 'Full screen'}
-          >
-            {fullscreen ? Icon.exitFull : Icon.full}
-          </button>
+        <div className="nav-pill">
+          <a className="brand" href={SITE_URL} target="_blank" rel="noopener noreferrer" aria-label="Plus Qiskit Fall Fest website">
+            <img className="logo-person" src={`${base}logo-rgukt.png`} alt="" width="36" height="44" />
+            <img className="logo-badge" src={`${base}logo-qff.png`} alt="" width="40" height="40" />
+            <span className="brand-text">
+              <span className="l1">Plus Qiskit</span> <span className="l2">Fall Fest</span>
+            </span>
+          </a>
+
+          <a className="site-link" href={SITE_URL} target="_blank" rel="noopener noreferrer">
+            qffrguktn.com
+          </a>
+
+          <div className="tools">
+            <button
+              type="button"
+              className="tool-btn plain"
+              onClick={() => setSound((v) => !v)}
+              aria-pressed={sound}
+              aria-label={sound ? 'Mute page-turn sound' : 'Turn on page-turn sound'}
+              title={sound ? 'Mute page-turn sound' : 'Turn on page-turn sound'}
+            >
+              {sound ? Icon.soundOn : Icon.soundOff}
+            </button>
+            <button
+              type="button"
+              className="tool-btn chip"
+              onClick={toggleFullscreen}
+              aria-label={fullscreen ? 'Exit full screen' : 'Full screen'}
+              title={fullscreen ? 'Exit full screen' : 'Full screen'}
+            >
+              {fullscreen ? Icon.exitFull : Icon.full}
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="stage-wrap">
-        <Flipbook ref={book} pages={PAGES} soundOn={sound} onChange={handleChange} onReady={() => setReady(true)} />
+        <Flipbook ref={book} pages={PAGES} soundOn={sound} onChange={handleChange} onReady={() => {
+            setReady(true)
+            // Build the audio engine while idle so the first page turn has nothing extra to do.
+            if ('requestIdleCallback' in window) window.requestIdleCallback(warmSound, { timeout: 1500 })
+            else setTimeout(warmSound, 300)
+          }} />
 
         {!ready && (
           <div className="loading" role="status">
@@ -151,7 +176,7 @@ export default function App() {
           </span>
           <span className={`hint ${touched ? 'gone' : ''}`}>
             <span className="hint-desktop">Drag a page corner or use the arrows</span>
-            <span className="hint-touch">Swipe or drag a page corner</span>
+            <span className="hint-touch">Swipe or drag the page</span>
           </span>
         </div>
         <button type="button" className="icon-btn mobile-nav" onClick={next} disabled={!canNext} aria-label="Next page">
