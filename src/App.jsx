@@ -95,7 +95,7 @@ export default function App() {
       <header className="top">
         <div className="title">
           <h1>Plus Qiskit Fall Fest ’26</h1>
-          <p>Inaugural ceremony invitation</p>
+          <p>Inaugural ceremony invitation<span className="org"> · RGUKT Nuzvid</span></p>
         </div>
         <div className="tools">
           <button
@@ -149,7 +149,10 @@ export default function App() {
               <i key={i} className={i === state.spreadIndex ? 'on' : ''} />
             ))}
           </span>
-          <span className={`hint ${touched ? 'gone' : ''}`}>Drag a page corner or use the arrows</span>
+          <span className={`hint ${touched ? 'gone' : ''}`}>
+            <span className="hint-desktop">Drag a page corner or use the arrows</span>
+            <span className="hint-touch">Swipe or drag a page corner</span>
+          </span>
         </div>
         <button type="button" className="icon-btn mobile-nav" onClick={next} disabled={!canNext} aria-label="Next page">
           {Icon.next}

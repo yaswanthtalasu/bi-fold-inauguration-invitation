@@ -4,7 +4,7 @@ An interactive flipbook version of the bi-fold invitation card, with a realistic
 
 - **Turn pages:** drag a page corner, click/tap a page edge, use the ◀ ▶ buttons, or press the arrow keys (PageUp/PageDown also work).
 - **Page order:** Invitation cover → Event schedule + Speakers → About (back cover).
-- **Responsive:** two-page spread on desktop/tablet, single page on phones.
+- **Responsive:** two-page spread on wide screens (900px+); one page at a time, with the same page-curl, on phones and tablets.
 - **Extras:** page-turn sound (mute button) and full-screen mode.
 
 Built with React + Vite and [StPageFlip](https://github.com/Nodlik/StPageFlip) (`page-flip`).

@@ -7,8 +7,10 @@ const PAGE_W = 1346
 const PAGE_H = 1903
 const RATIO = PAGE_W / PAGE_H
 const STAGE_PAD = 16
-// page-flip switches to single-page mode when the book is narrower than 2 * MIN_PAGE_W.
-const MIN_PAGE_W = 200
+// Below this stage width (phones, small tablets, phone landscape) the book shows
+// ONE page at a time, still with the full page-curl animation.
+const SPREAD_MIN_STAGE_W = 900
+const MIN_PAGE_W = 100
 
 function loadImages(pages) {
   return Promise.all(
@@ -93,14 +95,19 @@ const Flipbook = forwardRef(function Flipbook({ pages, soundOn, onChange, onRead
       const availW = stage.clientWidth - STAGE_PAD * 2
       const availH = stage.clientHeight - STAGE_PAD * 2
       const spreadW = Math.min(availW, availH * 2 * RATIO, 1800)
+      const wantSpread = stage.clientWidth >= SPREAD_MIN_STAGE_W
       let w
-      if (spreadW >= MIN_PAGE_W * 2) {
+      if (wantSpread) {
         w = spreadW // two-page spread
       } else {
-        w = Math.max(MIN_PAGE_W, Math.min(availW, availH * RATIO)) // single page
+        w = Math.max(120, Math.min(availW, availH * RATIO)) // one page
       }
+      // page-flip picks single-page mode when the book is narrower than 2 * minWidth,
+      // so steer that decision from here (settings are read on every update).
+      pf.getSettings().minWidth = wantSpread ? MIN_PAGE_W : Math.ceil(w / 2) + 1
       bookEl.style.width = `${Math.floor(w)}px`
       bookEl.style.maxWidth = 'none'
+      bookEl.style.minWidth = '0' // the library sets a min-width that would overflow small phones
       pf.update()
       applyView(spreadIndex())
       report()
@@ -126,7 +133,7 @@ const Flipbook = forwardRef(function Flipbook({ pages, soundOn, onChange, onRead
         size: 'stretch',
         minWidth: MIN_PAGE_W,
         maxWidth: 1400,
-        minHeight: 280,
+        minHeight: 100,
         maxHeight: 2000,
         showCover: true,
         drawShadow: true,
@@ -139,6 +146,7 @@ const Flipbook = forwardRef(function Flipbook({ pages, soundOn, onChange, onRead
         swipeDistance: 24,
         startZIndex: 2,
       })
+      bookEl.style.minWidth = '0'
       pf.loadFromHTML(pageEls)
 
       // Make the cover and back cover curl like every other page.
